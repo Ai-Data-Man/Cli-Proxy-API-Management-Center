@@ -21,6 +21,7 @@ import {
   IconSidebarProviders,
   IconSidebarQuota,
   IconSidebarSystem,
+  IconSidebarUsage,
 } from '@/components/ui/icons';
 import { INLINE_LOGO_JPEG } from '@/assets/logoInline';
 import {
@@ -41,6 +42,7 @@ const sidebarIcons: Record<string, ReactNode> = {
   authFiles: <IconSidebarAuthFiles size={18} />,
   oauth: <IconSidebarOauth size={18} />,
   quota: <IconSidebarQuota size={18} />,
+  usage: <IconSidebarUsage size={18} />,
   config: <IconSidebarConfig size={18} />,
   logs: <IconSidebarLogs size={18} />,
   system: <IconSidebarSystem size={18} />,
@@ -72,12 +74,6 @@ const headerIcons = {
       <path d="M4 7h16" />
       <path d="M4 12h16" />
       <path d="M4 17h16" />
-    </svg>
-  ),
-  close: (
-    <svg {...headerIconProps}>
-      <path d="M18 6 6 18" />
-      <path d="m6 6 12 12" />
     </svg>
   ),
   chevronLeft: (
@@ -391,6 +387,7 @@ export function MainLayout() {
     { path: '/auth-files', label: t('nav.auth_files'), icon: sidebarIcons.authFiles },
     { path: '/oauth', label: t('nav.oauth', { defaultValue: 'OAuth' }), icon: sidebarIcons.oauth },
     { path: '/quota', label: t('nav.quota_management'), icon: sidebarIcons.quota },
+    { path: '/usage', label: t('nav.usage_stats'), icon: sidebarIcons.usage },
     ...(config?.loggingToFile
       ? [{ path: '/logs', label: t('nav.logs'), icon: sidebarIcons.logs }]
       : []),
@@ -471,9 +468,6 @@ export function MainLayout() {
     }
     showNotification(t('notification.data_refreshed'), 'success');
   };
-  const mobileSidebarToggleLabel = sidebarOpen
-    ? t('sidebar.toggle_collapse', { defaultValue: 'Close navigation' })
-    : t('sidebar.toggle_expand', { defaultValue: 'Open navigation' });
 
   return (
     <div className={`app-shell ${sidebarCollapsed ? 'sidebar-is-collapsed' : ''}`}>
@@ -498,20 +492,17 @@ export function MainLayout() {
           {sidebarCollapsed ? headerIcons.chevronRight : headerIcons.chevronLeft}
         </button>
 
-        <div className="mobile-sidebar-actions">
+        <div className="header-actions floating-actions">
           <Button
             className="mobile-menu-btn"
             variant="ghost"
             size="sm"
             onClick={() => setSidebarOpen((prev) => !prev)}
-            title={mobileSidebarToggleLabel}
-            aria-label={mobileSidebarToggleLabel}
+            title={t('sidebar.toggle_expand', { defaultValue: 'Open navigation' })}
+            aria-label={t('sidebar.toggle_expand', { defaultValue: 'Open navigation' })}
           >
-            {sidebarOpen ? headerIcons.close : headerIcons.menu}
+            {headerIcons.menu}
           </Button>
-        </div>
-
-        <div className="header-actions floating-actions">
           <Button
             variant="ghost"
             size="sm"
