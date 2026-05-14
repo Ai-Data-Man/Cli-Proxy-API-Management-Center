@@ -4,12 +4,16 @@ on:
   push:
     tags:
       - 'v*'
+  release:
+    types:
+      - published
+      - edited
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Release tag'
-        required: false
-        default: 'manual-dispatch'
+        description: 'Release tag (e.g. v1.0.0)'
+        required: true
+        default: 'v1.10.3-adm'
 
 jobs:
   build-and-release:
@@ -19,6 +23,15 @@ jobs:
       contents: write
 
     steps:
+      - name: Determine tag
+        id: tag
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "version=${{ github.event.inputs.tag }}" >> $GITHUB_OUTPUT
+          else
+            echo "version=${GITHUB_REF_NAME}" >> $GITHUB_OUTPUT
+          fi
+
       - name: Checkout code
         uses: actions/checkout@v4
         with:
@@ -37,7 +50,7 @@ jobs:
       - name: Build all-in-one HTML
         run: npm run build
         env:
-          VERSION: ${{ github.ref_name }}
+          VERSION: ${{ steps.tag.outputs.version }}
 
       - name: Prepare release assets
         run: |
@@ -47,10 +60,18 @@ jobs:
           echo "Asset: management.html ($(ls -lh management.html | awk '{print $5}'))"
           echo "Digest: $(cat management.html.sha256)"
 
+      - name: Create/update tag for workflow_dispatch
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git tag -f "${{ steps.tag.outputs.version }}" HEAD
+          git push origin "${{ steps.tag.outputs.version }}" --force
+
       - name: Generate release notes
         run: |
           set -euo pipefail
-          current_tag="${GITHUB_REF_NAME}"
+          current_tag="${{ steps.tag.outputs.version }}"
           previous_tag="$(git tag --list 'v*' --sort=-v:refname | grep -v "^${current_tag}$" | head -n 1 || true)"
           if [ -n "${previous_tag}" ]; then
             range="${previous_tag}..${current_tag}"
@@ -71,6 +92,7 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
+          tag_name: ${{ steps.tag.outputs.version }}
           files: |
             dist/management.html
             dist/management.html.sha256
