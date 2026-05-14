@@ -37,7 +37,9 @@ jobs:
         run: |
           cd dist
           mv index.html management.html
-          ls -lh management.html
+          sha256sum management.html | cut -d' ' -f1 > management.html.sha256
+          echo "Asset: management.html ($(ls -lh management.html | awk '{print $5}'))"
+          echo "Digest: $(cat management.html.sha256)"
 
       - name: Generate release notes
         run: |
@@ -50,13 +52,22 @@ jobs:
             range="${current_tag}"
           fi
 
-          : > release-notes.md
-          git log --pretty=format:"- %h %s" "${range}" >> release-notes.md
+          {
+            echo "## 变更内容"
+            echo ""
+            git log --pretty=format:"- %h %s" "${range}"
+            echo ""
+            echo ""
+            echo "---"
+            echo "SHA256: $(cat dist/management.html.sha256)"
+          } > release-notes.md
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
-          files: dist/management.html
+          files: |
+            dist/management.html
+            dist/management.html.sha256
           body_path: release-notes.md
           draft: false
           prerelease: false
