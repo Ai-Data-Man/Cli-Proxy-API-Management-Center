@@ -429,16 +429,34 @@ export function AiProvidersOpenAIEditPage() {
             const canTestKey = Boolean(entry.apiKey?.trim()) && hasConfiguredModels;
 
             return (
-              <div key={index} className={styles.keyTableRow}>
+              <div key={index} className={styles.keyTableRow} style={entry.disabled ? { opacity: 0.55 } : undefined}>
                 {/* 序号 */}
                 <div className={styles.keyTableColIndex}>{index + 1}</div>
 
                 {/* 状态指示灯 */}
                 <div
                   className={styles.keyTableColStatus}
-                  title={keyTestStatuses[index]?.message || ''}
+                  title={
+                    entry.disabled
+                      ? t('auth_files.health_status_disabled') +
+                        (keyTestStatuses[index]?.message ? ' | ' + keyTestStatuses[index].message : '')
+                      : keyTestStatuses[index]?.message || ''
+                  }
                 >
                   <StatusIcon status={keyStatus} />
+                  {entry.disabled && (
+                    <span
+                      style={{
+                        marginLeft: 4,
+                        fontSize: 10,
+                        fontWeight: 600,
+                        color: 'var(--text-tertiary)',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {t('auth_files.health_status_disabled')}
+                    </span>
+                  )}
                 </div>
 
                 {/* Key 输入框 */}

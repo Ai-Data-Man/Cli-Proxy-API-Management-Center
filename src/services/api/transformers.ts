@@ -120,6 +120,8 @@ const normalizeApiKeyEntry = (entry: unknown): ApiKeyEntry | null => {
     headers
   };
   if (authIndex) result.authIndex = authIndex;
+  const disabledRaw = record?.disabled;
+  if (disabledRaw === true || disabledRaw === 'true') result.disabled = true;
   return result;
 };
 

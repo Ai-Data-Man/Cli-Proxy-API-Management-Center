@@ -227,6 +227,18 @@ export function isRuntimeOnlyAuthFile(file: AuthFileItem): boolean {
   return false;
 }
 
+/**
+ * Reports whether this auth entry is a runtime-synthesized credential for an
+ * openai-compatibility api-key-entry. Such entries have no backing file but
+ * are individually toggleable via the management API (persisted to config.yaml).
+ */
+export function isConfigManagedAuthFile(file: AuthFileItem): boolean {
+  const raw = file['config_managed'];
+  if (typeof raw === 'boolean') return raw;
+  if (typeof raw === 'string') return raw.trim().toLowerCase() === 'true';
+  return false;
+}
+
 export const formatModified = (item: AuthFileItem): string => {
   const raw = item['modtime'] ?? item.modified;
   if (!raw) return '-';
