@@ -3,6 +3,7 @@ import { useNavigate, useOutletContext } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import { ToggleSwitch } from '@/components/ui/ToggleSwitch';
 import { HeaderInputList } from '@/components/ui/HeaderInputList';
 import { Input } from '@/components/ui/Input';
 import { ModelInputList } from '@/components/ui/ModelInputList';
@@ -378,6 +379,16 @@ export function AiProvidersOpenAIEditPage() {
       setTestMessage('');
     };
 
+    const toggleEntryDisabled = (idx: number) => {
+      const next = list.map((entry, i) =>
+        i === idx ? { ...entry, disabled: !entry.disabled } : entry,
+      );
+      setForm((prev) => ({ ...prev, apiKeyEntries: next }));
+      setDraftKeyTestStatus(idx, { status: 'idle', message: '' });
+      setTestStatus('idle');
+      setTestMessage('');
+    };
+
     const removeEntry = (idx: number) => {
       const next = list.filter((_, i) => i !== idx);
       const nextLength = next.length ? next.length : 1;
@@ -418,6 +429,7 @@ export function AiProvidersOpenAIEditPage() {
           <div className={styles.keyTableHeader}>
             <div className={styles.keyTableColIndex}>#</div>
             <div className={styles.keyTableColStatus}>{t('common.status')}</div>
+            <div className={styles.keyTableColToggle}>{t('auth_files.status_toggle_label')}</div>
             <div className={styles.keyTableColKey}>{t('common.api_key')}</div>
             <div className={styles.keyTableColProxy}>{t('common.proxy_url')}</div>
             <div className={styles.keyTableColAction}>{t('common.action')}</div>
@@ -429,34 +441,26 @@ export function AiProvidersOpenAIEditPage() {
             const canTestKey = Boolean(entry.apiKey?.trim()) && hasConfiguredModels;
 
             return (
-              <div key={index} className={styles.keyTableRow} style={entry.disabled ? { opacity: 0.55 } : undefined}>
+              <div key={index} className={styles.keyTableRow}>
                 {/* 序号 */}
                 <div className={styles.keyTableColIndex}>{index + 1}</div>
 
                 {/* 状态指示灯 */}
                 <div
                   className={styles.keyTableColStatus}
-                  title={
-                    entry.disabled
-                      ? t('auth_files.health_status_disabled') +
-                        (keyTestStatuses[index]?.message ? ' | ' + keyTestStatuses[index].message : '')
-                      : keyTestStatuses[index]?.message || ''
-                  }
+                  title={keyTestStatuses[index]?.message || ''}
                 >
                   <StatusIcon status={keyStatus} />
-                  {entry.disabled && (
-                    <span
-                      style={{
-                        marginLeft: 4,
-                        fontSize: 10,
-                        fontWeight: 600,
-                        color: 'var(--text-tertiary)',
-                        whiteSpace: 'nowrap',
-                      }}
-                    >
-                      {t('auth_files.health_status_disabled')}
-                    </span>
-                  )}
+                </div>
+
+                {/* 启用/禁用开关 */}
+                <div className={styles.keyTableColToggle}>
+                  <ToggleSwitch
+                    ariaLabel={t('auth_files.status_toggle_label')}
+                    checked={!entry.disabled}
+                    disabled={saving || disableControls || isTestingKeys}
+                    onChange={() => toggleEntryDisabled(index)}
+                  />
                 </div>
 
                 {/* Key 输入框 */}

@@ -10,7 +10,6 @@ import { downloadBlob } from '@/utils/download';
 import {
   getTypeLabel,
   hasAuthFileStatusMessage,
-  isConfigManagedAuthFile,
   isRuntimeOnlyAuthFile,
 } from '@/features/authFiles/constants';
 
@@ -82,7 +81,7 @@ export function useAuthFilesData(): UseAuthFilesDataResult {
 
   const selectAllVisible = useCallback((visibleFiles: AuthFileItem[]) => {
     const nextSelected = visibleFiles
-      .filter((file) => !isRuntimeOnlyAuthFile(file) && !isConfigManagedAuthFile(file))
+      .filter((file) => !isRuntimeOnlyAuthFile(file))
       .map((file) => file.name);
     if (nextSelected.length === 0) return;
     setSelectedFiles((prev) => {
@@ -94,7 +93,7 @@ export function useAuthFilesData(): UseAuthFilesDataResult {
 
   const invertVisibleSelection = useCallback((visibleFiles: AuthFileItem[]) => {
     const visibleNames = visibleFiles
-      .filter((file) => !isRuntimeOnlyAuthFile(file) && !isConfigManagedAuthFile(file))
+      .filter((file) => !isRuntimeOnlyAuthFile(file))
       .map((file) => file.name);
     if (visibleNames.length === 0) return;
 
@@ -306,14 +305,11 @@ export function useAuthFilesData(): UseAuthFilesDataResult {
             if (!isFiltered && !isProblemOnly && !isDisabledOnly) {
               await authFilesApi.deleteAll();
               showNotification(t('auth_files.delete_all_success'), 'success');
-              setFiles((prev) =>
-                  prev.filter((file) => isRuntimeOnlyAuthFile(file) || isConfigManagedAuthFile(file)),
-                );
+              setFiles((prev) => prev.filter((file) => isRuntimeOnlyAuthFile(file)));
               deselectAll();
             } else {
               const filesToDelete = files.filter((file) => {
                 if (isRuntimeOnlyAuthFile(file)) return false;
-                if (isConfigManagedAuthFile(file)) return false;
                 if (isFiltered && file.type !== filter) return false;
                 if (isProblemOnly && !hasAuthFileStatusMessage(file)) return false;
                 if (isDisabledOnly && file.disabled !== true) return false;

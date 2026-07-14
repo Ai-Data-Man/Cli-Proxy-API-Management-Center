@@ -27,7 +27,6 @@ import {
   getAuthFileStatusMessage,
   getTypeColor,
   getTypeLabel,
-  isConfigManagedAuthFile,
   isRuntimeOnlyAuthFile,
   parsePriorityValue,
   type QuotaProviderType,
@@ -89,7 +88,6 @@ export function AuthFileCard(props: AuthFileCardProps) {
     failure: normalizeUsageTotal(file.failed),
   };
   const isRuntimeOnly = isRuntimeOnlyAuthFile(file);
-  const isConfigManaged = isConfigManagedAuthFile(file);
   const isAistudio = (file.type || '').toLowerCase() === 'aistudio';
   const showModelsButton = !isRuntimeOnly || isAistudio;
   const typeColor = getTypeColor(file.type || 'unknown', resolvedTheme);
@@ -127,11 +125,7 @@ export function AuthFileCard(props: AuthFileCardProps) {
   const noteValue = typeof file.note === 'string' ? file.note.trim() : '';
   const stateLabel = isRuntimeOnly
     ? t('auth_files.type_virtual') || '虚拟认证文件'
-    : isConfigManaged
-      ? file.disabled
-        ? t('auth_files.health_status_disabled')
-        : t('auth_files.health_status_healthy')
-      : file.disabled
+    : file.disabled
       ? t('auth_files.health_status_disabled')
       : hasStatusWarning
         ? t('auth_files.health_status_warning')
@@ -153,7 +147,7 @@ export function AuthFileCard(props: AuthFileCardProps) {
       <div className={styles.fileCardLayout}>
         <div className={styles.fileCardMain}>
           <div className={styles.cardHeader}>
-            {!isRuntimeOnly && !isConfigManaged && (
+            {!isRuntimeOnly && (
               <SelectionCheckbox
                 checked={selected}
                 onChange={() => onToggleSelect(file.name)}
@@ -283,7 +277,7 @@ export function AuthFileCard(props: AuthFileCardProps) {
                   </>
                 </Button>
               )}
-              {!isRuntimeOnly && !isConfigManaged && (
+              {!isRuntimeOnly && (
                 <div className={styles.cardUtilityActions}>
                   <Button
                     variant="secondary"
@@ -322,7 +316,7 @@ export function AuthFileCard(props: AuthFileCardProps) {
                 </div>
               )}
             </div>
-            {(!isRuntimeOnly || isConfigManaged) && (
+            {!isRuntimeOnly && (
               <div className={styles.statusToggle}>
                 <span className={styles.statusToggleLabel}>
                   {t('auth_files.status_toggle_label')}
