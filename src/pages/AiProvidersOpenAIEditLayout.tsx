@@ -473,6 +473,7 @@ export function AiProvidersOpenAIEditLayout() {
           apiKey: entry.apiKey.trim(),
           proxyUrl: entry.proxyUrl?.trim() || undefined,
           headers: entry.headers,
+          ...(entry.disabled ? { disabled: true } : {}),
         })),
       };
       if (form.priority !== undefined && Number.isFinite(form.priority)) {
